@@ -1,0 +1,49 @@
+# {{SERVICE_PASCAL}} Project Guide
+
+## Core Mandates
+- **MUST**: Run `make fmt` after every code change.
+
+## Project Overview
+{{SERVICE_PASCAL}} is a Go microservice. Built with Go, SQLite, Ent ORM, Chi router, JWT auth.
+
+## Technical Stack
+- Language: Go v1.26
+- Database: SQLite
+- ORM: Ent
+- Router: chi
+- Validation: validator/v10
+- Docs: Swagger (swag)
+- Logging: log/slog
+- Rate Limiting: httprate (100 req/min per IP)
+- Migrations: Atlas (Ent)
+
+## Directory Structure
+```
+cmd/api/main.go              Application entry point
+config/                      YAML configuration
+internal/<entity>/           Domain packages (handler, service, repository, model)
+internal/platform/http/      Router & middleware
+internal/platform/render/    Standard API responses
+internal/db/sqlite.go        SQLite client
+ent/schema/                  Ent schema definitions
+pkg/config/                  Config loader (viper)
+```
+
+## Naming Conventions
+- Packages: short, lowercase, single-word
+- Table names: singular, `{{SERVICE_PREFIX}}_` prefix (e.g. `{{SERVICE_PREFIX}}_thing`)
+- Ent annotation: `entsql.Annotation{Table: "{{SERVICE_PREFIX}}_thing"}`
+- Env vars: `{{SERVICE_UPPER}}_` prefix
+
+## Architecture
+Handler → Service → Repository (strict direction)
+
+## Workflow
+1. `make vendor` — download deps
+2. `make generate` — generate ent code
+3. `make migrate-gen name=desc` — create migration
+4. `make migrate-apply` — apply migration
+5. `make fmt` — format (MANDATORY after changes)
+6. `make test` — run tests
+7. `make swag` — regenerate swagger
+8. `make build && make up` — deploy

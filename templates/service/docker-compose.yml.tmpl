@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    ports:
+      - "{{SERVICE_PORT}}:{{SERVICE_PORT}}"
+    volumes:
+      - ./data:/app/data
+      - ./log:/app/log
+    environment:
+      - {{SERVICE_UPPER}}_ENVIRONMENT=development
+      - {{SERVICE_UPPER}}_DATABASE_PATH=/app/data/{{SERVICE}}.db
+      - {{SERVICE_UPPER}}_LOG_DIR=/app/log
+    restart: always
+
+  atlas:
+    image: arigaio/atlas
+    volumes:
+      - .:/app
+      - ./data:/data
+    working_dir: /app

@@ -1,0 +1,18 @@
+ENVIRONMENT: production
+SERVER:
+  ADDR: ":{{SERVICE_PORT}}"
+  HOST: "localhost:{{SERVICE_PORT}}"
+  READ_TIMEOUT: 5s
+  WRITE_TIMEOUT: 10s
+  IDLE_TIMEOUT: 120s
+DATABASE:
+  PATH: "data/{{SERVICE}}.db"
+LOG:
+  DIR: "log"
+  LEVEL: "info"
+AUTH:
+  JWT_SECRET: "a-very-secure-and-shared-secret-key"
+  JWT_EXPIRY: 24h
+CORS:
+  ALLOWED_ORIGINS:
+    - "*"

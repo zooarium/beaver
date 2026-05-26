@@ -1,0 +1,24 @@
+FROM golang:1.26-alpine AS builder
+
+RUN apk add --no-cache build-base
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+COPY vendor/ vendor/
+COPY . .
+
+RUN CGO_ENABLED=1 CGO_CFLAGS="-D_LARGEFILE64_SOURCE" GOOS=linux go build -mod=vendor -a -installsuffix cgo -o {{SERVICE}} ./cmd/api/main.go
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates sqlite-libs
+
+WORKDIR /app
+
+COPY --from=builder /app/{{SERVICE}} .
+
+EXPOSE {{SERVICE_PORT}}
+
+CMD ["./{{SERVICE}}"]

@@ -1,0 +1,40 @@
+package schema
+
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/field"
+)
+
+type {{ENTITY_PASCAL}} struct {
+	ent.Schema
+}
+
+func ({{ENTITY_PASCAL}}) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "{{SERVICE_PREFIX}}_{{ENTITY}}"},
+	}
+}
+
+func ({{ENTITY_PASCAL}}) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		TimeMixin{},
+	}
+}
+
+func ({{ENTITY_PASCAL}}) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int("app_id"),
+		field.Int("user_id"),
+		field.String("name").
+			NotEmpty(),
+		field.Int8("status").
+			Default(1),
+		// Add domain-specific fields here
+	}
+}
+
+func ({{ENTITY_PASCAL}}) Edges() []ent.Edge {
+	return nil
+}

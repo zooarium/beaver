@@ -1,0 +1,102 @@
+package {{ENTITY}}
+
+import (
+	"context"
+	"fmt"
+
+	"{{SERVICE}}/ent"
+	"{{SERVICE}}/ent/{{ENTITY}}"
+)
+
+type {{ENTITY}}Repository struct {
+	client *ent.Client
+}
+
+func NewRepository(client *ent.Client) *{{ENTITY}}Repository {
+	return &{{ENTITY}}Repository{client: client}
+}
+
+func (r *{{ENTITY}}Repository) Create(ctx context.Context, item {{ENTITY_PASCAL}}) ({{ENTITY_PASCAL}}, error) {
+	e, err := r.client.{{ENTITY_PASCAL}}.
+		Create().
+		SetAppID(item.AppID).
+		SetUserID(item.UserID).
+		SetName(item.Name).
+		SetStatus(item.Status).
+		Save(ctx)
+	if err != nil {
+		return {{ENTITY_PASCAL}}{}, fmt.Errorf("create {{ENTITY}}: %w", err)
+	}
+	return r.mapToModel(e), nil
+}
+
+func (r *{{ENTITY}}Repository) List(ctx context.Context, appID, userID int) ([]{{ENTITY_PASCAL}}, error) {
+	es, err := r.client.{{ENTITY_PASCAL}}.
+		Query().
+		Where({{ENTITY}}.AppID(appID)).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list {{ENTITY_PLURAL}}: %w", err)
+	}
+	items := make([]{{ENTITY_PASCAL}}, len(es))
+	for i, e := range es {
+		items[i] = r.mapToModel(e)
+	}
+	return items, nil
+}
+
+func (r *{{ENTITY}}Repository) GetByID(ctx context.Context, appID, userID, id int) ({{ENTITY_PASCAL}}, error) {
+	e, err := r.client.{{ENTITY_PASCAL}}.
+		Query().
+		Where({{ENTITY}}.ID(id), {{ENTITY}}.AppID(appID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return {{ENTITY_PASCAL}}{}, Err{{ENTITY_PASCAL}}NotFound
+		}
+		return {{ENTITY_PASCAL}}{}, fmt.Errorf("get {{ENTITY}} by id: %w", err)
+	}
+	return r.mapToModel(e), nil
+}
+
+func (r *{{ENTITY}}Repository) Update(ctx context.Context, appID, userID, id int, item {{ENTITY_PASCAL}}) ({{ENTITY_PASCAL}}, error) {
+	count, err := r.client.{{ENTITY_PASCAL}}.
+		Update().
+		Where({{ENTITY}}.ID(id), {{ENTITY}}.AppID(appID)).
+		SetName(item.Name).
+		SetStatus(item.Status).
+		Save(ctx)
+	if err != nil {
+		return {{ENTITY_PASCAL}}{}, fmt.Errorf("update {{ENTITY}}: %w", err)
+	}
+	if count == 0 {
+		return {{ENTITY_PASCAL}}{}, Err{{ENTITY_PASCAL}}NotFound
+	}
+	return r.GetByID(ctx, appID, userID, id)
+}
+
+func (r *{{ENTITY}}Repository) Delete(ctx context.Context, appID, userID, id int) error {
+	count, err := r.client.{{ENTITY_PASCAL}}.
+		Delete().
+		Where({{ENTITY}}.ID(id), {{ENTITY}}.AppID(appID)).
+		Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("delete {{ENTITY}}: %w", err)
+	}
+	if count == 0 {
+		return Err{{ENTITY_PASCAL}}NotFound
+	}
+	return nil
+}
+
+func (r *{{ENTITY}}Repository) mapToModel(e *ent.{{ENTITY_PASCAL}}) {{ENTITY_PASCAL}} {
+	return {{ENTITY_PASCAL}}{
+		ID:        e.ID,
+		AppID:     e.AppID,
+		UserID:    e.UserID,
+		Name:      e.Name,
+		Status:    e.Status,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+}
