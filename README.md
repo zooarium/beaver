@@ -4,7 +4,7 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 
 ## What it generates
 
-**`new-service`** — creates a complete Go microservice with:
+**`service`** — creates a complete Go microservice with:
 - Chi router, JWT auth (via `keeper`), CORS, rate limiting (100 req/min per IP)
 - Ent ORM + SQLite + Atlas migrations
 - Swagger docs (swag)
@@ -12,7 +12,7 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 - Structured logging via `log/slog`
 - Viper config (YAML + env var override)
 
-**`new-entity`** — adds a domain entity with full CRUD:
+**`entity`** — adds a domain entity with full CRUD:
 - `internal/<entity>/handler.go` — HTTP handler (chi routes, Swagger annotations)
 - `internal/<entity>/service.go` — business logic + validation
 - `internal/<entity>/repository.go` — Ent queries
@@ -23,12 +23,13 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 
 ```bash
 # Create a new service
-./scaffold.sh new-service <name> <prefix> <port>
-./scaffold.sh new-service ferret frt 8082
+make service name=<name> prefix=<prefix> port=<port>
+make service name=ferret prefix=frt port=8082
 
-# Add an entity to an existing service
-./scaffold.sh new-entity <service-dir> <entity> <entity-plural>
-./scaffold.sh new-entity ../ferret product products
+# Add an entity to an existing service (plural defaults to <entity>s)
+make entity service=<service-dir> entity=<entity> [plural=<plural>]
+make entity service=../ferret entity=product
+make entity service=../ferret entity=category plural=categories
 ```
 
 ## Tokens
@@ -47,15 +48,21 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 ## New service workflow
 
 ```bash
-cd <service-dir>
-make vendor                          # download deps
-./beaver/scaffold.sh new-entity . <entity> <entity-plural>
-# add fields to ent/schema/<entity>.go
-make generate                        # generate ent code
-make migrate-gen name=initial_schema # create migration
-make migrate-apply                   # apply migration
-make swag                            # generate swagger docs
-make build && make up                # build + start
+# From beaver/
+make service name=ferret prefix=frt port=8082
+
+cd ../ferret && make vendor
+cd ../beaver
+make entity service=../ferret entity=product
+
+# Back in the service dir:
+cd ../ferret
+# add fields to ent/schema/product.go
+make generate
+make migrate-gen name=initial_schema
+make migrate-apply
+make swag
+make build && make up
 ```
 
 ## Generated service structure
@@ -88,21 +95,8 @@ Each layer depends only on interfaces. Repository wraps Ent. Table names follow 
 
 | Target           | Description                          |
 |------------------|--------------------------------------|
-| `make build`     | Build Docker image                   |
-| `make up`        | Start containers                     |
-| `make down`      | Stop containers                      |
-| `make refresh`   | Rebuild and restart                  |
-| `make vendor`    | Tidy + vendor dependencies           |
-| `make generate`  | Run `go generate` (Ent codegen)      |
-| `make fmt`       | Format with goimports (run after any change) |
-| `make test`      | Run tests                            |
-| `make swag`      | Regenerate Swagger docs              |
-| `make migrate-gen name=<desc>` | Create migration      |
-| `make migrate-apply` | Apply pending migrations         |
-| `make lint`      | Run golangci-lint                    |
-| `make coverage`  | Generate coverage report             |
-| `make sql query="..."` | Run SQL against SQLite DB      |
-| `make go-upgrade version=1.x` | Upgrade Go version      |
+| `make service name=… prefix=… port=…` | Scaffold a new microservice |
+| `make entity service=… entity=… [plural=…]` | Add entity to existing service |
 
 ## Dependencies
 
