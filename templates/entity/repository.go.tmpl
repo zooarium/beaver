@@ -30,10 +30,13 @@ func (r *{{ENTITY}}Repository) Create(ctx context.Context, item {{ENTITY_PASCAL}
 	return r.mapToModel(e), nil
 }
 
-func (r *{{ENTITY}}Repository) List(ctx context.Context, appID, userID int) ([]{{ENTITY_PASCAL}}, error) {
+func (r *{{ENTITY}}Repository) List(ctx context.Context, appID, userID, limit, offset int) ([]{{ENTITY_PASCAL}}, error) {
 	es, err := r.client.{{ENTITY_PASCAL}}.
 		Query().
 		Where({{ENTITY}}.AppID(appID)).
+		Order(ent.Asc({{ENTITY}}.FieldID)).
+		Limit(limit).
+		Offset(offset).
 		All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("list {{ENTITY_PLURAL}}: %w", err)

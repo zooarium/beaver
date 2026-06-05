@@ -74,14 +74,14 @@ func main() {
 
 	docs.SwaggerInfo.Host = cfg.Server.Host
 
-	client, err := db.NewSQLiteClient(cfg.Database.Path)
+	client, err := db.NewClient(cfg.Database.Driver, cfg.Database.Path, cfg.Database.DSN)
 	if err != nil {
-		slog.Error("failed to open sqlite client", "error", err)
+		slog.Error("failed to open database client", "error", err, "driver", cfg.Database.Driver)
 		os.Exit(1)
 	}
 	defer func() {
 		if err := client.Close(); err != nil {
-			slog.Error("failed to close sqlite client", "error", err)
+			slog.Error("failed to close database client", "error", err)
 		}
 	}()
 

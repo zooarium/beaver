@@ -6,10 +6,12 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 
 **`service`** — creates a complete Go microservice with:
 - Chi router, JWT auth (via `keeper`), CORS, rate limiting (100 req/min per IP)
-- Ent ORM + SQLite + Atlas migrations
+- Ent ORM + configurable DB driver (SQLite by default, Postgres-ready) + Atlas migrations
+- Prometheus `/metrics` endpoint + request metrics middleware
+- Paginated list endpoints (`limit`/`offset`)
 - Swagger docs (swag)
 - Docker + docker-compose
-- Structured logging via `log/slog`
+- Structured logging via `log/slog` (level from `LOG.LEVEL`)
 - Viper config (YAML + env var override)
 
 **`entity`** — adds a domain entity with full CRUD:
@@ -77,7 +79,7 @@ internal/<entity>/
     model.go                    request/response types
 internal/platform/http/         router + middleware
 internal/platform/render/       JSON response helpers
-internal/db/                    SQLite client
+internal/db/                    DB client (sqlite3/postgres)
 ent/schema/                     Ent schema definitions
 ent/migrate/migrations/         Atlas migration files
 pkg/config/                     Viper config loader

@@ -13,7 +13,7 @@ var Err{{ENTITY_PASCAL}}NotFound = errors.New("{{ENTITY}} not found")
 
 type Repository interface {
 	Create(ctx context.Context, item {{ENTITY_PASCAL}}) ({{ENTITY_PASCAL}}, error)
-	List(ctx context.Context, appID, userID int) ([]{{ENTITY_PASCAL}}, error)
+	List(ctx context.Context, appID, userID, limit, offset int) ([]{{ENTITY_PASCAL}}, error)
 	GetByID(ctx context.Context, appID, userID, id int) ({{ENTITY_PASCAL}}, error)
 	Update(ctx context.Context, appID, userID, id int, item {{ENTITY_PASCAL}}) ({{ENTITY_PASCAL}}, error)
 	Delete(ctx context.Context, appID, userID, id int) error
@@ -21,7 +21,7 @@ type Repository interface {
 
 type Service interface {
 	Create(ctx context.Context, appID, userID int, req Create{{ENTITY_PASCAL}}Request) ({{ENTITY_PASCAL}}, error)
-	List(ctx context.Context, appID, userID int) ([]{{ENTITY_PASCAL}}, error)
+	List(ctx context.Context, appID, userID, limit, offset int) ([]{{ENTITY_PASCAL}}, error)
 	GetByID(ctx context.Context, appID, userID, id int) ({{ENTITY_PASCAL}}, error)
 	Update(ctx context.Context, appID, userID, id int, req Update{{ENTITY_PASCAL}}Request) ({{ENTITY_PASCAL}}, error)
 	Delete(ctx context.Context, appID, userID, id int) error
@@ -61,8 +61,8 @@ func (s *service) Create(ctx context.Context, appID, userID int, req Create{{ENT
 	return created, nil
 }
 
-func (s *service) List(ctx context.Context, appID, userID int) ([]{{ENTITY_PASCAL}}, error) {
-	items, err := s.repo.List(ctx, appID, userID)
+func (s *service) List(ctx context.Context, appID, userID, limit, offset int) ([]{{ENTITY_PASCAL}}, error) {
+	items, err := s.repo.List(ctx, appID, userID, limit, offset)
 	if err != nil {
 		slog.Error("failed to list {{ENTITY_PLURAL}}", "error", err, "app_id", appID, "user_id", userID)
 		return nil, err

@@ -35,7 +35,9 @@ type AuthConfig struct {
 }
 
 type DatabaseConfig struct {
-	Path string `mapstructure:"PATH"`
+	Path   string `mapstructure:"PATH"`
+	Driver string `mapstructure:"DRIVER"`
+	DSN    string `mapstructure:"DSN"`
 }
 
 type LogConfig struct {
@@ -53,6 +55,8 @@ func Load() (*Config, error) {
 	v.SetDefault("SERVER.WRITE_TIMEOUT", 10*time.Second)
 	v.SetDefault("SERVER.IDLE_TIMEOUT", 120*time.Second)
 	v.SetDefault("DATABASE.PATH", "data/{{SERVICE}}.db")
+	v.SetDefault("DATABASE.DRIVER", "sqlite3")
+	v.SetDefault("DATABASE.DSN", "")
 	v.SetDefault("LOG.DIR", "log")
 	v.SetDefault("LOG.LEVEL", "info")
 	v.SetDefault("AUTH.JWT_SECRET", "a-very-secure-and-shared-secret-key")

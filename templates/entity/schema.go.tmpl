@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type {{ENTITY_PASCAL}} struct {
@@ -37,4 +38,10 @@ func ({{ENTITY_PASCAL}}) Fields() []ent.Field {
 
 func ({{ENTITY_PASCAL}}) Edges() []ent.Edge {
 	return nil
+}
+
+func ({{ENTITY_PASCAL}}) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("app_id"),
+	}
 }
