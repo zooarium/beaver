@@ -29,5 +29,6 @@ The templates bake in engineering constraints that generated services must keep 
 - **Postgres-ready DB**: `internal/db` exposes `NewClient(driver, path, dsn)` switching between sqlite3 and postgres (`DATABASE.DRIVER`/`DATABASE.DSN` config).
 - **Prometheus metrics**: the router registers `MetricsMiddleware` and mounts `GET /metrics` (outside JWT auth).
 - **Log-level config**: `LOG.LEVEL` maps to the slog level in `cmd/api/main.go`.
+- **Locking / race safety**: generated guidance (`templates/service/CLAUDE.md.tmpl`) requires race-free access to shared mutable state — `sync.RWMutex` for in-memory state, transactions/unique constraints for check-then-write DB flows — without coarse global locks or locks held across I/O.
 
 When editing templates, preserve these constraints (and the matching guidance in `templates/service/CLAUDE.md.tmpl`).
