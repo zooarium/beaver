@@ -13,6 +13,7 @@ Scaffold tool for Go microservices in the zooarium ecosystem. Generates a full s
 - Docker + docker-compose
 - Structured logging via `log/slog` (level from `LOG.LEVEL`)
 - Viper config (YAML + env var override)
+- Secondary listeners: config-driven extra ports (`SECONDARY:` list) exposing allow-listed routes with per-listener rate limit and optional `JWT_SECRET` (e.g. keeper's guest secret for public surfaces — identity always from JWT); validated by `make config-check` / `-check-config` flag
 
 **`entity`** — adds a domain entity with full CRUD:
 - `internal/<entity>/handler.go` — HTTP handler (chi routes, Swagger annotations)

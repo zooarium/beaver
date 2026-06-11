@@ -30,5 +30,6 @@ The templates bake in engineering constraints that generated services must keep 
 - **Prometheus metrics**: the router registers `MetricsMiddleware` and mounts `GET /metrics` (outside JWT auth).
 - **Log-level config**: `LOG.LEVEL` maps to the slog level in `cmd/api/main.go`.
 - **Locking / race safety**: generated guidance (`templates/service/CLAUDE.md.tmpl`) requires race-free access to shared mutable state — `sync.RWMutex` for in-memory state, transactions/unique constraints for check-then-write DB flows — without coarse global locks or locks held across I/O.
+- **Secondary listeners**: config-driven extra HTTP servers (`SECONDARY:` list) sharing the primary's handlers via the `mount` hook in `cmd/api/main.go.tmpl`; per-listener allow-listed routes (`"METHOD /path"`), independent rate limit, optional `JWT_SECRET` (verify with a different signing key — e.g. keeper's guest secret for public surfaces; identity always comes from JWT, no anonymous mode). Built by `internal/platform/http/secondary.go.tmpl`; validated by `normalizeSecondary()` in `pkg/config/config.go.tmpl` and the `-check-config` flag / `make config-check` target.
 
 When editing templates, preserve these constraints (and the matching guidance in `templates/service/CLAUDE.md.tmpl`).

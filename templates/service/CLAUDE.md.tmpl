@@ -14,20 +14,31 @@
 - Validation: validator/v10
 - Docs: Swagger (swag)
 - Logging: log/slog
-- Rate Limiting: httprate (100 req/min per IP)
+- Rate Limiting: httprate (primary: 100 req/min per IP; secondary listeners: per-listener config)
 - Migrations: Atlas (Ent)
 
 ## Directory Structure
 ```
-cmd/api/main.go              Application entry point
+cmd/api/main.go              Application entry point (primary + secondary servers, -check-config flag)
 config/                      YAML configuration
 internal/<entity>/           Domain packages (handler, service, repository, model)
-internal/platform/http/      Router & middleware
+internal/platform/http/      Router & middleware (router.go primary, secondary.go listeners)
 internal/platform/render/    Standard API responses
 internal/db/client.go        SQLite client
 ent/schema/                  Ent schema definitions
 pkg/config/                  Config loader (viper)
 ```
+
+## Secondary Listeners
+Config-driven extra HTTP servers in the same process (`SECONDARY:` list in config). Each entry: `NAME`, `ENABLED`, `ADDR` (unique, required), `JWT_SECRET` (optional — listener verifies with this signing key instead of `AUTH.JWT_SECRET`), `RATE_LIMIT` (default 100/1m), `ROUTES` (chi-syntax `"METHOD /path"` allow-list; non-listed = 404).
+
+Key facts:
+- Identity ALWAYS comes from JWT — no anonymous mode. Public surfaces use keeper guest tokens (publishable site key → keeper `POST /guest-keys/auth` → short-lived tenant-scoped JWT, role=guest, signed with keeper's `GUEST_JWT_SECRET`); set the listener's `JWT_SECRET` to that secret to accept them — they fail everywhere else.
+- Built by `internal/platform/http/secondary.go` (`NewSecondaryRouter`); reuses the same handlers via the `mount` hook in `cmd/api/main.go` — when mounting a new entity in the primary router, mount it in the hook too. Never duplicate handler wiring.
+- `/health` + `/metrics` always exposed per listener; swagger only on primary (covers all routes — shared handlers).
+- Validation at startup via `pkg/config` `normalizeSecondary()` (addr required/unique, per-entry defaults) + `allowRoutes()` pattern checks; `make config-check` vets config without starting servers.
+- Env vars cannot override list entries (viper limitation) — YAML only.
+- New secondary port → publish it in docker-compose.yml `ports:` — EXCEPT internal service-to-service listeners: leave those out of `ports:` so they stay reachable only on the compose network (service DNS), bind to a private interface on bare metal, and raise `RATE_LIMIT` for internal bursts (callers forward the user's JWT, or a guest token where configured).
 
 ## Naming Conventions
 - Packages: short, lowercase, single-word
@@ -46,7 +57,8 @@ Handler → Service → Repository (strict direction)
 5. `make fmt` — format (MANDATORY after changes)
 6. `make test` — run tests
 7. `make swag` — regenerate swagger
-8. `make build && make up` — deploy
+8. `make config-check` — validate config (incl. secondary listeners) after config changes
+9. `make build && make up` — deploy
 
 ## Engineering Constraints (mandatory for all new code)
 

@@ -18,3 +18,22 @@ AUTH:
 CORS:
   ALLOWED_ORIGINS:
     - "*"
+# Optional secondary listeners: extra ports in the same process, each
+# exposing only its allow-listed routes. Identity always comes from JWT;
+# JWT_SECRET (optional) makes the listener verify with a different signing
+# key (e.g. keeper's guest secret) instead of AUTH.JWT_SECRET.
+# Per-entry defaults: RATE_LIMIT 100 req / 1m, NAME secondary-<i>.
+SECONDARY: []
+# SECONDARY:
+#   - NAME: "public-intake"
+#     ENABLED: true
+#     ADDR: ":9090"
+#     # Verify with keeper's guest secret: only guest tokens work here.
+#     JWT_SECRET: "a-separate-guest-token-secret-key"
+#     RATE_LIMIT:
+#       REQUESTS: 60
+#       WINDOW: 1m
+#     # chi-syntax "METHOD /path" patterns; anything not listed returns 404.
+#     ROUTES:
+#       - "GET /things"
+#       - "GET /things/{id}"
