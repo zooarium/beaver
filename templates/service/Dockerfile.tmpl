@@ -21,6 +21,7 @@ RUN apk --no-cache add ca-certificates sqlite-libs
 WORKDIR /app
 
 COPY --from=builder /app/{{SERVICE}} .
+COPY CHANGELOG.md .
 
 EXPOSE {{SERVICE_PORT}}
 
